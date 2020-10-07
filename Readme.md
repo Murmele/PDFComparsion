@@ -1,0 +1,1 @@
+Creates a graphical difference between two pdf files and stores the result in a new pdf file.
