@@ -5,7 +5,7 @@
 
 # IMPORT LIBRARIES
 import pdf2image
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageOps
 import time
 
 # DECLARE CONSTANTS
@@ -42,19 +42,49 @@ def pdftopil(pdf_path):
     print("Time taken : " + str(time.time() - start_time))
     return pil_images
 
+def difference(image1, image2):
+    # features not in loaded
+    diff1 = ImageChops.subtract(image1, image2)
+    diff1 = ImageChops.invert(diff1)
+    diff1 = ImageOps.colorize(diff1.convert("L"), black="red", white="white", )
+
+    # elements in loaded, but not in original
+    diff2 = ImageChops.subtract(image2, image1)
+    diff2 = ImageChops.invert(diff2)
+    diff2 = ImageOps.colorize(diff2.convert("L"), black="green", white="white")
+
+    diff = ImageChops.add_modulo(diff1, diff2)
+    # diff1.show()
+    # diff2.show()
+    # diff.show()
+
+    return diff
+
+
 if __name__ == "__main__":
     original = "affuteuse_original.pdf"
     loaded = "affuteuse_loaded.pdf"
+    new_loaded = "affuteuse_new_loaded.pdf"
     pil_images_original = pdftopil(original)
     pil_images_loaded = pdftopil(loaded)
+    pil_images_new_loaded = pdftopil(new_loaded)
 
-    assert len(pil_images_loaded) == len(pil_images_original), "Number of pages does not match"
+    assert len(pil_images_loaded) == len(pil_images_original) == len(pil_images_new_loaded), "Number of pages does not match"
 
     diffs = []
+    diffs2 = []
     for i in range(len(pil_images_original)):
-        diff = ImageChops.difference(pil_images_original[i], pil_images_loaded[i])
-        diff = ImageChops.invert(diff)
+
+
+        diff = difference(pil_images_original[i], pil_images_loaded[i])
         #diff.show()
         diffs.append(diff)
+
+        diff2 = difference(pil_images_original[i], pil_images_new_loaded[i])
+        diffs2.append(diff2)
+
     filename = "Difference"
     diffs[0].save(filename + ".pdf", save_all=True, append_images=diffs[1:])
+
+    filename = "Difference2"
+    diffs2[0].save(filename + ".pdf", save_all=True, append_images=diffs2[1:])
