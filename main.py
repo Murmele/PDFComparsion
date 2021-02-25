@@ -1,6 +1,7 @@
 # PDF TO IMAGE CONVERSION
 # Important libraries which have to be installed in windows.
 # - Poppler. See: https://pypi.org/project/pdf2image/
+# Arch Linux: for Poppler
 
 
 # IMPORT LIBRARIES
@@ -33,7 +34,8 @@ def pdftopil(pdf_path):
     # use_cropbox parameter allows you to use the crop box instead of the media box when converting
     # strict parameter allows you to catch pdftoppm syntax error with a custom type PDFSyntaxError
 
-    poppler_path = r"Poppler\poppler-\bin"
+    #poppler_path = r"Poppler\poppler-\bin"
+    poppler_path = "/usr/bin"
 
     start_time = time.time()
     pil_images = pdf2image.convert_from_path(pdf_path, dpi=DPI, output_folder=OUTPUT_FOLDER, first_page=FIRST_PAGE,
@@ -46,12 +48,12 @@ def difference(image1, image2):
     # features not in loaded
     diff1 = ImageChops.subtract(image1, image2)
     diff1 = ImageChops.invert(diff1)
-    diff1 = ImageOps.colorize(diff1.convert("L"), black="red", white="white", )
+    diff1 = ImageOps.colorize(diff1.convert("L"), black="green", white="white", )
 
     # elements in loaded, but not in original
     diff2 = ImageChops.subtract(image2, image1)
     diff2 = ImageChops.invert(diff2)
-    diff2 = ImageOps.colorize(diff2.convert("L"), black="green", white="white")
+    diff2 = ImageOps.colorize(diff2.convert("L"), black="red", white="white")
 
     diff = ImageChops.add_modulo(diff1, diff2)
     # diff1.show()
@@ -62,29 +64,35 @@ def difference(image1, image2):
 
 
 if __name__ == "__main__":
-    original = "affuteuse_original.pdf"
-    loaded = "affuteuse_loaded.pdf"
-    new_loaded = "affuteuse_new_loaded.pdf"
-    pil_images_original = pdftopil(original)
-    pil_images_loaded = pdftopil(loaded)
-    pil_images_new_loaded = pdftopil(new_loaded)
-
-    assert len(pil_images_loaded) == len(pil_images_original) == len(pil_images_new_loaded), "Number of pages does not match"
-
-    diffs = []
-    diffs2 = []
-    for i in range(len(pil_images_original)):
+    projects = ["affuteuse"]
 
 
-        diff = difference(pil_images_original[i], pil_images_loaded[i])
-        #diff.show()
-        diffs.append(diff)
 
-        diff2 = difference(pil_images_original[i], pil_images_new_loaded[i])
-        diffs2.append(diff2)
+    for project in projects:
+        original = project + "_original.pdf"
+        loaded = project + "_loaded.pdf"
+        new_loaded = project + "_new_loaded.pdf"
 
-    filename = "Difference"
-    diffs[0].save(filename + ".pdf", save_all=True, append_images=diffs[1:])
+        pil_images_original = pdftopil(original)
+        pil_images_loaded = pdftopil(loaded)
+        pil_images_new_loaded = pdftopil(new_loaded)
 
-    filename = "Difference2"
-    diffs2[0].save(filename + ".pdf", save_all=True, append_images=diffs2[1:])
+        assert len(pil_images_loaded) == len(pil_images_original) == len(pil_images_new_loaded), "Number of pages does not match"
+
+        diffs = []
+        diffs2 = []
+        for i in range(len(pil_images_original)):
+
+
+            diff = difference(pil_images_original[i], pil_images_loaded[i])
+            #diff.show()
+            diffs.append(diff)
+
+            diff2 = difference(pil_images_original[i], pil_images_new_loaded[i])
+            diffs2.append(diff2)
+
+        filename = project + "_Difference_original_loaded"
+        diffs[0].save(filename + ".pdf", save_all=True, append_images=diffs[1:])
+
+        filename = project + "_Difference_original_new_loaded"
+        diffs2[0].save(filename + ".pdf", save_all=True, append_images=diffs2[1:])
