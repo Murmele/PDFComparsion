@@ -8,6 +8,9 @@
 import pdf2image
 from PIL import Image, ImageChops, ImageOps
 import time
+import sys
+import subprocess
+import os
 
 # DECLARE CONSTANTS
 DPI = 300
@@ -91,8 +94,16 @@ if __name__ == "__main__":
             diff2 = difference(pil_images_original[i], pil_images_new_loaded[i])
             diffs2.append(diff2)
 
-        filename = project + "_Difference_original_loaded"
-        diffs[0].save(filename + ".pdf", save_all=True, append_images=diffs[1:])
+        filename = project + "_Difference_original_loaded" + ".pdf"
+        diffs[0].save(filename, save_all=True, append_images=diffs[1:])
+        if sys.platform.startswith('linux'):
+            subprocess.call(["xdg-open", filename])
+        else:
+            os.startfile(filename)
 
-        filename = project + "_Difference_original_new_loaded"
-        diffs2[0].save(filename + ".pdf", save_all=True, append_images=diffs2[1:])
+        filename = project + "_Difference_original_new_loaded" + ".pdf"
+        diffs2[0].save(filename, save_all=True, append_images=diffs2[1:])
+        if sys.platform.startswith('linux'):
+            subprocess.call(["xdg-open", filename])
+        else:
+            os.startfile(filename)
